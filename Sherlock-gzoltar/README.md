@@ -2,12 +2,12 @@
 
 This forked version allows to provide a list of tests that are marked as flaky and thus count them as failed in the Junit run.
 
-###Command sequence:
+### Command sequence:
 - Clean and compile tests : `mvn clean test-compile` (e.g. `-pl $submodule` to specify the module)
 - Record tests with gzoltar : `mvn -P sherlock gzoltar:list-test-methods`
 - Run the tests and compute gzoltar execution file : `mvn -P sherlock -Dgzoltar.offline=false -Dgzoltar.collectCoverage=true -Dgzlotar.flakyTestList=${listPath} gzoltar:run-test-methods`
 - Generate reports and rankings : `mvn gzoltar:fl-report`
-###maven `pom.xml` config
+### maven `pom.xml` config
 `Profile`
 ```xml
 <profile>
