@@ -25,10 +25,18 @@ import com.gzoltar.core.test.TestTask;
 import com.gzoltar.core.util.IsolatingClassLoader;
 
 public class JUnitTestTask extends TestTask {
+  boolean runWithFlaky=false;
 
   public JUnitTestTask(final URL[] searchPathURLs, final boolean offline,
       final boolean collectCoverage, final boolean initTestClass, final TestMethod testMethod) {
     super(searchPathURLs, offline, collectCoverage, initTestClass, testMethod);
+  }
+
+  //SHERLOCK-ADDITION create global field to report if this test task is flaky
+  public JUnitTestTask(final URL[] searchPathURLs, final boolean offline,
+      final boolean collectCoverage, final boolean initTestClass, final TestMethod testMethod,final boolean isTestFlaky) {
+    super(searchPathURLs, offline, collectCoverage, initTestClass, testMethod,isTestFlaky);
+    this.runWithFlaky=true;
   }
 
   /**
@@ -61,10 +69,20 @@ public class JUnitTestTask extends TestTask {
                 .forName("com.gzoltar.core.listeners.JUnitListener", false, classLoader)
                 .newInstance());
       } else {
-        runner.addListener(new com.gzoltar.core.listeners.JUnitListener());
+        if(runWithFlaky)
+          runner.addListener(new com.gzoltar.core.listeners.JUnitListener(isTestFlaky,true));
+        else
+          runner.addListener(new com.gzoltar.core.listeners.JUnitListener());
       }
     }
-    JUnitTestResult result = new JUnitTestResult(runner.run(request));
+    JUnitTestResult result;
+    //SHERLOCK-ADDITION modify result instance if test is indeed flaky
+    if(this.runWithFlaky){
+      result = new JUnitTestResult(runner.run(request),isTestFlaky);
+      System.out.printf("[SHERLOCK] Results acquired : %b should be %b %n",result.hasFailed(),isTestFlaky);
+    }else{
+      result = new JUnitTestResult(runner.run(request));
+    }
     classLoader.close();
     return result;
   }

@@ -16,12 +16,12 @@
  */
 package com.gzoltar.cli.commands;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
+
 import org.kohsuke.args4j.Option;
 import com.gzoltar.cli.Command;
 import com.gzoltar.core.test.TestMethod;
@@ -37,6 +37,9 @@ import io.github.classgraph.ClassGraph;
  * The <code>runTestMethods</code> command.
  */
 public class RunTestMethods extends Command {
+
+
+
 
   @Option(name = "--testMethods", usage = "file with list of test methods to run",
       metaVar = "<path>", required = true)
@@ -55,10 +58,17 @@ public class RunTestMethods extends Command {
       metaVar = "<boolean>", required = false)
   private Boolean initTestClass = false;
 
+  //SHERLOCK-ADDITION add option to specify flaky test list file
+  @Option(name="--flakyTests", usage="file with list of flaky test",metaVar = "<path>",required = false)
+  private File flakyTestFile=null;
+
+
   @Override
   public String description() {
     return "Run test methods in isolation.";
   }
+
+
 
   /**
    * {@inheritDoc}
@@ -78,6 +88,17 @@ public class RunTestMethods extends Command {
       throw new RuntimeException(this.testMethods + " does not exist or cannot be read");
     }
 
+    //SHERLOCK-ADDITION Read the file and construct list of flaky tests
+    boolean runWithFlaky = (flakyTestFile != null );
+    Set<String> flakyTestSet = new HashSet<>();
+    if(runWithFlaky){
+      if ((!this.flakyTestFile.exists() || !this.flakyTestFile.canRead())){
+        throw new RuntimeException(this.flakyTestFile + " does not exist or cannot be read");
+      }
+      flakyTestSet = constructFlakyTestList(flakyTestFile);
+    }
+
+
     final URL[] classpathURLs = new ClassGraph().getClasspathURLs().toArray(new URL[0]);
 
     try (BufferedReader br = new BufferedReader(new FileReader(this.testMethods))) {
@@ -88,10 +109,21 @@ public class RunTestMethods extends Command {
         TestMethod testMethod = new TestMethod(ClassType.valueOf(split[0]), split[1]);
         TestTask testTask = null;
 
+        //SHERLOCK-ADDITION
+        System.out.printf("[SHERLOCK] test name = %s %n",testMethod.getLongName());
+
         switch (testMethod.getClassType()) {
           case JUNIT:
-            testTask = new JUnitTestTask(classpathURLs, this.offline, this.collectCoverage,
-                this.initTestClass, testMethod);
+            //SHERLOCK-ADDITION add boolean parameter to JUnitTestTask : isFlaky
+            if(runWithFlaky) {
+              //SHERLOCK-ADDITION check within flakyTestsList set if testMethod is marked as flaky
+              boolean isTestFlaky = flakyTestSet.contains(testMethod.getLongName());
+              testTask = new JUnitTestTask(classpathURLs, this.offline, this.collectCoverage,
+                      this.initTestClass, testMethod,isTestFlaky);
+            }else{
+              testTask = new JUnitTestTask(classpathURLs, this.offline, this.collectCoverage,
+                      this.initTestClass, testMethod);
+            }
             break;
           case TESTNG:
             testTask = new TestNGTestTask(classpathURLs, this.offline, this.collectCoverage,
@@ -113,5 +145,18 @@ public class RunTestMethods extends Command {
     out.println("* Done!");
 
     return 0;
+  }
+  //SHERLOCK-ADDITION Create set containing flakyTests
+  private Set<String> constructFlakyTestList(File flakyTestFile) {
+    Set<String> flakyTestSet = new HashSet<>();
+    try (BufferedReader br = new BufferedReader(new FileReader(flakyTestFile))) {
+      String line;
+      while ((line = br.readLine()) != null){
+        flakyTestSet.add(line);
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return flakyTestSet;
   }
 }

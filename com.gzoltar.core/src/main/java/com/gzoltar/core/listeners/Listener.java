@@ -35,6 +35,17 @@ public class Listener extends RunListener {
 
   protected String stackTrace;
 
+  protected boolean isFlaky = false;
+  protected boolean runWithFlaky = false;
+  public Listener(){
+    super();
+  }
+
+  public Listener(boolean isFlaky,boolean runWithFlaky) {
+    this.isFlaky = isFlaky;
+    this.runWithFlaky = runWithFlaky;
+  }
+
   /**
    * Called before any tests have been run.
    */
@@ -64,9 +75,15 @@ public class Listener extends RunListener {
    * @param testName
    */
   public final void onTestFinish(final String testName) {
-    Collector.instance().endTransaction(testName,
-        this.hasFailed ? TransactionOutcome.FAIL : TransactionOutcome.PASS,
-        System.nanoTime() - this.startTime, this.stackTrace);
+    if(runWithFlaky){
+      Collector.instance().endTransaction(testName,
+              this.isFlaky ? TransactionOutcome.FAIL : TransactionOutcome.PASS,
+              System.nanoTime() - this.startTime, this.stackTrace);
+    }else{
+      Collector.instance().endTransaction(testName,
+              this.hasFailed ? TransactionOutcome.FAIL : TransactionOutcome.PASS,
+              System.nanoTime() - this.startTime, this.stackTrace);
+    }
   }
 
   /**

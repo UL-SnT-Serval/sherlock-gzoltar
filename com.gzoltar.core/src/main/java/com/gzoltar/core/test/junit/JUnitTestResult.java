@@ -26,4 +26,11 @@ public class JUnitTestResult extends TestResult {
         !result.getFailures().isEmpty() ? result.getFailures().get(0).getException() : null,
         result.wasSuccessful());
   }
+
+  //SHERLOCK-ADDITION
+  public JUnitTestResult(final Result result,boolean isFlaky) {
+    super(result.getRunTime(),
+        null,
+            !isFlaky);
+  }
 }

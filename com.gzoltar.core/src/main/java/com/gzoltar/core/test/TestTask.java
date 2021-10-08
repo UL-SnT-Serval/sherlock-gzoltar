@@ -36,6 +36,8 @@ public abstract class TestTask implements Callable<TestResult> {
 
   protected final TestMethod testMethod;
 
+  protected boolean isTestFlaky;
+
   /**
    * Constructor for task to run a JUnit test method.
    */
@@ -47,6 +49,18 @@ public abstract class TestTask implements Callable<TestResult> {
     this.collectCoverage = collectCoverage;
     this.initTestClass = initTestClass;
     this.testMethod = testMethod;
+  }
+
+  //SHERLOCK-ADDITION new testTask constructor that has the isTestFlaky field
+  protected TestTask(final URL[] searchPathURLs, final boolean offline,
+                     final boolean collectCoverage, final boolean initTestClass, final TestMethod testMethod,final boolean isTestFlaky) {
+    this.id = INC.incrementAndGet();
+    this.searchPathURLs = searchPathURLs;
+    this.offline = offline;
+    this.collectCoverage = collectCoverage;
+    this.initTestClass = initTestClass;
+    this.testMethod = testMethod;
+    this.isTestFlaky = isTestFlaky;
   }
 
   /**

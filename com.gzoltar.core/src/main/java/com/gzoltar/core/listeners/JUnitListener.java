@@ -25,6 +25,14 @@ import org.junit.runner.notification.Failure;
  */
 public final class JUnitListener extends Listener {
 
+  public JUnitListener(){
+    super();
+  }
+
+  public JUnitListener(boolean isFlaky,boolean runWithFlaky) {
+    super(isFlaky,runWithFlaky  );
+  }
+
   @Override
   public void testRunStarted(final Description description) {
     super.onRunStart();

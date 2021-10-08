@@ -50,6 +50,10 @@ public class RunTestMethodsMojo extends AgentMojo {
   @Parameter(property = "gzoltar.collectCoverage", defaultValue = "true")
   private boolean collectCoverage;
 
+  //SHERLOCK-ADDITION add property for specifying flaky test list in plugin description
+  @Parameter(property = "gzoltar.flakyTestList")
+  private String flakyTestListFile;
+
   /**
    * {@inheritDoc}
    */
@@ -59,7 +63,7 @@ public class RunTestMethodsMojo extends AgentMojo {
     if (!testMethodsFile.exists() || !testMethodsFile.canRead()) {
       throw new MojoExecutionException(testMethodsFile + " does not exist or cannot be read");
     }
-
+    System.out.printf("[SHERLOCK] flaky test file :%s %n",flakyTestListFile);
     try {
       List<String> commandLineArgs = new ArrayList<String>();
 
@@ -86,8 +90,14 @@ public class RunTestMethodsMojo extends AgentMojo {
         commandLineArgs.add("--collectCoverage");
       }
 
+      //SHERLOCK-ADDITION add command line argument to specify the flakytestlist file
+      if(this.flakyTestListFile != null){
+        commandLineArgs.add("--flakyTests");
+        commandLineArgs.add(this.flakyTestListFile);
+      }
+
       if (Launcher.launch(commandLineArgs) != 0) {
-        throw new MojoFailureException("Execution of each test case in isolation has failed!");
+        throw new MojoFailureException("Execution of each test case in isolation has failed! : "+commandLineArgs.toString());
       }
     } catch (Exception e) {
       throw new MojoExecutionException(e.getMessage(), e);

@@ -141,6 +141,15 @@
                 <version>4.12</version>
               </dependency>
             </dependencies>
+            <executions>
+              <execution>
+                <id>run-test-methods</id>
+                <goals>
+                  <goal>run-test-methods</goal>
+                </goals>
+              </execution>
+            </executions>
+
           </plugin>
         </plugins>
       </build>
