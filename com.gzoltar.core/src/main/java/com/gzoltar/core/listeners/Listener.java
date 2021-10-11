@@ -16,8 +16,10 @@
  */
 package com.gzoltar.core.listeners;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.runner.notification.RunListener;
 import com.gzoltar.core.model.TransactionOutcome;
 import com.gzoltar.core.runtime.Collector;
@@ -34,11 +36,18 @@ public class Listener extends RunListener {
   private long startTime;
 
   protected String stackTrace;
-
+  Set<String> flakyTestSet;
   protected boolean isFlaky = false;
   protected boolean runWithFlaky = false;
   public Listener(){
     super();
+    String flakyTestListPath = System.getProperty("gzoltar.flakyTestList","none");
+    System.out.printf("[SHERLOCK] gzoltar.flakyTestList=%s%n",flakyTestListPath);
+    if (!flakyTestListPath.equals("none")) {
+      this.flakyTestSet = constructFlakyTestList(new File(flakyTestListPath));
+      this.runWithFlaky = true;
+    }
+
   }
 
   public Listener(boolean isFlaky,boolean runWithFlaky) {
@@ -75,7 +84,10 @@ public class Listener extends RunListener {
    * @param testName
    */
   public final void onTestFinish(final String testName) {
+
     if(runWithFlaky){
+      this.isFlaky = flakyTestSet.contains(testName);
+      System.out.printf(" Test: [%s] supposed to be flaky ? [%s] ",testName,this.isFlaky);
       Collector.instance().endTransaction(testName,
               this.isFlaky ? TransactionOutcome.FAIL : TransactionOutcome.PASS,
               System.nanoTime() - this.startTime, this.stackTrace);
@@ -113,5 +125,18 @@ public class Listener extends RunListener {
     PrintWriter writer = new PrintWriter(stringWriter);
     exception.printStackTrace(writer);
     return stringWriter.toString();
+  }
+
+  private Set<String> constructFlakyTestList(File flakyTestFile) {
+    Set<String> flakyTestSet = new HashSet<>();
+    try (BufferedReader br = new BufferedReader(new FileReader(flakyTestFile))) {
+      String line;
+      while ((line = br.readLine()) != null){
+        flakyTestSet.add(line);
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return flakyTestSet;
   }
 }
