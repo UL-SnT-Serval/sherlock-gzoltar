@@ -3,11 +3,13 @@
 This forked version allows to provide a list of tests that are marked as flaky and thus count them as failed in the Junit run.
 
 ### Command sequence:
+#### To use the gzoltar built in test runner 
 - Clean and compile tests : `mvn clean test-compile` (e.g. `-pl $submodule` to specify the module)
 - Record tests with gzoltar : `mvn -P sherlock gzoltar:list-test-methods`
 - Run the tests and compute gzoltar execution file : `mvn -P sherlock -Dgzoltar.offline=false -Dgzoltar.collectCoverage=true -Dgzlotar.flakyTestList=${listPath} gzoltar:run-test-methods`
 - Generate reports and rankings : `mvn gzoltar:fl-report`
-### maven `pom.xml` config
+
+#### associated maven `pom.xml` config
 `Profile`
 ```xml
 <profile>
@@ -93,4 +95,47 @@ This forked version allows to provide a list of tests that are marked as flaky a
                   </execution>
                 </executions>
             </plugin>
+```
+
+#### To use surefire test runner 
+- Clean and compile tests : `mvn clean test-compile` (e.g. `-pl $submodule` to specify the module)
+- Run test and compile gzoltar execution file : `mvn -Dgzoltar.flakyTestList=${listPath} -pl ${submodule} test`
+- Generate report : `mvn -pl ${submodule} gzoltar:fl-report`
+
+#### associated maven `pom.xml` config
+
+```xml
+ <plugin>
+   <groupId>com.gzoltar</groupId>
+   <artifactId>com.gzoltar.maven</artifactId>
+   <version>1.7.3-SNAPSHOT</version>
+   <dependencies>
+     <dependency>
+       <groupId>junit</groupId>
+       <artifactId>junit</artifactId>
+       <version>4.12</version>
+     </dependency>
+   </dependencies>
+   <executions>
+     <execution>
+       <id>pre-unit-test</id>
+       <goals>
+         <goal>prepare-agent</goal>
+       </goals>
+     </execution>
+   </executions>
+ </plugin>
+
+```
+The gzoltar listener should also be added to the surefire plugin :
+
+```xml
+<configuration>
+       <properties>
+              <property>
+                     <name>listener</>
+                     <value>com.gzoltar.internal.core.listeners.JUnitListener</value>
+              </property>
+       </properties>
+</configuration>
 ```
