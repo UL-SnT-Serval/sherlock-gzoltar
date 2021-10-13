@@ -24,7 +24,7 @@ This forked version allows to provide a list of tests that are marked as flaky a
         <plugin>
           <groupId>com.gzoltar</groupId>
           <artifactId>com.gzoltar.maven</artifactId>
-          <version>1.7.3-SNAPSHOT</version>
+          <version>1.7.3-SHERLOCK</version>
           <dependencies>
             <dependency>
               <groupId>junit</groupId>
@@ -51,7 +51,7 @@ This forked version allows to provide a list of tests that are marked as flaky a
 <plugin>
                 <groupId>com.gzoltar</groupId>
                 <artifactId>com.gzoltar.maven</artifactId>
-                <version>1.7.3-SNAPSHOT</version>
+                <version>1.7.3-SHERLOCK</version>
                 <executions>
                   <execution>
                     <id>fl-report</id>
@@ -108,7 +108,7 @@ This forked version allows to provide a list of tests that are marked as flaky a
  <plugin>
    <groupId>com.gzoltar</groupId>
    <artifactId>com.gzoltar.maven</artifactId>
-   <version>1.7.3-SNAPSHOT</version>
+   <version>1.7.3-SHERLOCK</version>
    <dependencies>
      <dependency>
        <groupId>junit</groupId>
