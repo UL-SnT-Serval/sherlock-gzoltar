@@ -139,3 +139,10 @@ The gzoltar listener should also be added to the surefire plugin :
        </properties>
 </configuration>
 ```
+
+### FAQ
+
+#### Getting `ClassNotFoundException` on the Gzoltar `JunitListener`.
+It might happened that on multiple-module maven project the `com.gzoltar.core` classpath library is over-written by surefire `argLine` parameter.
+To avoid this issue you should add `@{argLine}` to the `<argLine>` property in the surefire plugin.
+

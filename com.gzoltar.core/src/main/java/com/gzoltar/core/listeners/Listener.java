@@ -87,7 +87,7 @@ public class Listener extends RunListener {
 
     if(runWithFlaky){
       this.isFlaky = flakyTestSet.contains(testName);
-      System.out.printf(" Test: [%s] supposed to be flaky ? [%s] ",testName,this.isFlaky);
+      System.out.printf(" Test: [%s] supposed to be flaky ? [%s] %n",testName,this.isFlaky);
       Collector.instance().endTransaction(testName,
               this.isFlaky ? TransactionOutcome.FAIL : TransactionOutcome.PASS,
               System.nanoTime() - this.startTime, this.stackTrace);
